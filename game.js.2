@@ -1,0 +1,118 @@
+const express = require('express');
+const cors = require('cors');
+const mysql = require('mysql2');
+const app = express();
+
+app.use(express.json());
+app.use(cors());
+
+// डेटाबेस कनेक्शन
+const db = mysql.createConnection({
+    host: 'localhost',
+    user: 'root',
+    password: 'your_password', // अपना डेटाबेस पासवर्ड यहाँ लिखें
+    database: 'tulsi_win'
+});
+
+db.connect((err) => {
+    if (err) {
+        console.error('Database connection failed: ' + err.stack);
+        return;
+    }
+    console.log('Tulsi Win Server connected to MySQL Database!');
+});
+
+// गेम वेरिएबल
+let currentTimer = 30;
+let winningColor = '';
+let gameHistory = [];
+
+// 30 सेकंड का गेम लूप और रिजल्ट जनरेटर
+setInterval(() => {
+    currentTimer--;
+    if (currentTimer <= 0) {
+        currentTimer = 30;
+        const colors = ['Green', 'Red', 'Green', 'Red', 'Violet'];
+        winningColor = colors[Math.floor(Math.random() * colors.length)];
+        
+        gameHistory.unshift({ color: winningColor, time: new Date().toLocaleTimeString() });
+        if (gameHistory.length > 10) gameHistory.pop();
+    }
+}, 1000);
+
+// 1. लॉगिन / रजिस्टर एपीआई
+app.post('/api/auth', (req, res) => {
+    const { phone, password } = req.body;
+    if (!phone || !password) return res.status(400).json({ success: false, message: "Required fields missing" });
+
+    let query = "SELECT * FROM users WHERE phone = ?";
+    db.query(query, [phone], (err, results) => {
+        if (err) return res.status(500).json({ success: false, error: err });
+
+        if (results.length > 0) {
+            let user = results[0];
+            if (user.password !== password) return res.status(400).json({ success: false, message: "Incorrect password" });
+            res.json({ success: true, message: "Login successful", user });
+        } else {
+            let insertQuery = "INSERT INTO users (phone, password, balance) VALUES (?, ?, 500.00)";
+            db.query(insertQuery, [phone, password], (err, result) => {
+                if (err) return res.status(500).json({ success: false, error: err });
+                res.json({ success: true, message: "Account created with ₹500 bonus", user: { phone, balance: 500.00 } });
+            });
+        }
+    });
+});
+
+// 2. गेम स्टेट (टाइमर और पिछले रिजल्ट) देखने की एपीआई
+app.get('/api/gamestate', (req, res) => {
+    res.json({ timer: currentTimer, history: gameHistory, currentWinningColor: winningColor });
+});
+
+// 3. बेट लगाने और रिजल्ट प्रोसेस करने की एपीआई
+app.post('/api/bet', (req, res) => {
+    const { phone, betColor, amount } = req.body;
+    let betAmount = parseFloat(amount);
+
+    if (!phone || !betColor || isNaN(betAmount) || betAmount <= 0) {
+        return res.status(400).json({ success: false, message: "Invalid bet details" });
+    }
+
+    // चेक करें कि यूज़र का बैलेंस कितना है
+    let checkQuery = "SELECT balance FROM users WHERE phone = ?";
+    db.query(checkQuery, [phone], (err, results) => {
+        if (err || results.length === 0) return res.status(404).json({ success: false, message: "User not found" });
+
+        let currentBalance = parseFloat(results[0].balance);
+        if (currentBalance < betAmount) {
+            return res.status(400).json({ success: false, message: "Insufficient balance" });
+        }
+
+        // पिछले राउंड का कलर रिजल्ट चेक करें या डिसाइड करें
+        let won = (betColor === winningColor);
+        let finalBalance = currentBalance - betAmount;
+        let winAmount = 0;
+
+        if (won) {
+            winAmount = betColor === 'Violet' ? betAmount * 4.5 : betAmount * 2; // वॉयलेट पर ज्यादा रिटर्न या नॉर्मल डबल
+            finalBalance += winAmount;
+        }
+
+        // डेटाबेस में नया बैलेंस अपडेट करें
+        let updateQuery = "UPDATE users SET balance = ? WHERE phone = ?";
+        db.query(updateQuery, [finalBalance, phone], (err, updateResult) => {
+            if (err) return res.status(500).json({ success: false, error: err });
+
+            res.json({
+                success: true,
+                won: won,
+                winningColor: winningColor,
+                winAmount: winAmount,
+                newBalance: finalBalance
+            });
+        });
+    });
+});
+
+app.listen(3000, () => {
+    console.log('Tulsi Win Complete Backend running on port 3000');
+});
