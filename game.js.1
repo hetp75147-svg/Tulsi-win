@@ -1,0 +1,58 @@
+const express = require('express');
+const cors = require('cors');
+const db = require('./database');
+const app = express();
+
+app.use(express.json());
+app.use(cors());
+
+// 1. यूज़र रजिस्ट्रेशन या लॉगिन एपीआई
+app.post('/api/auth', (req, res) => {
+    const { phone, password } = req.body;
+
+    if (!phone || !password) {
+        return.status(400).json({ success: false, message: "Phone and password required" });
+    }
+
+    // चेक करें कि यूज़र पहले से है या नहीं
+    let query = "SELECT * FROM users WHERE phone = ?";
+    db.query(query, [phone], (err, results) => {
+        if (err) return res.status(500).json({ success: false, error: err });
+
+        if (results.length > 0) {
+            // यूज़र पहले से मौजूद है - लॉगिन करें
+            let user = results[0];
+            if (user.password !== password) {
+                return.status(400).json({ success: false, message: "Incorrect password" });
+            }
+            res.json({ success: true, message: "Login successful", user });
+        } else {
+            // नया यूज़र है - रजिस्टर करें और ₹500 बोनस दें
+            let insertQuery = "INSERT INTO users (phone, password, balance) VALUES (?, ?, 500)";
+            db.query(insertQuery, [phone, password], (err, result) => {
+                if (err) return res.status(500).json({ success: false, error: err });
+                
+                res.json({ 
+                    success: true, 
+                    message: "Account created successfully", 
+                    user: { phone, balance: 500 } 
+                });
+            });
+        }
+    });
+});
+
+// 2. यूज़र का बैलेंस देखने की एपीआई
+app.get('/api/balance/:phone', (req, res) => {
+    let query = "SELECT balance FROM users WHERE phone = ?";
+    db.query(query, [req.params.phone], (err, results) => {
+        if (err || results.length === 0) {
+            return.status(404).json({ success: false, message: "User not found" });
+        }
+        res.json({ success: true, balance: results[0].balance });
+    });
+});
+
+app.listen(3000, () => {
+    console.log('Tulsi Win Database Server running on port 3000');
+});
