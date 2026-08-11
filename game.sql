@@ -1,0 +1,11 @@
+CREATE DATABASE tulsi_win;
+
+USE tulsi_win;
+
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    phone VARCHAR(15) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    balance DECIMAL(10, 2) DEFAULT 500.00,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
