@@ -1,0 +1,40 @@
+.game-container {
+    background: white;
+    margin: 15px;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.timer-box {
+    background: #e8f8f5;
+    padding: 10px;
+    border-radius: 8px;
+    margin: 15px 0;
+}
+
+.timer-box h1 {
+    margin: 5px 0;
+    color: #11998e;
+}
+
+.color-buttons {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 20px;
+}
+
+.btn-green, .btn-violet, .btn-red {
+    padding: 12px 20px;
+    border: none;
+    color: white;
+    font-weight: bold;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.btn-green { background-color: #28a745; }
+.btn-violet { background-color: #6f42c1; }
+.btn-red { background-color: #dc3545; }
