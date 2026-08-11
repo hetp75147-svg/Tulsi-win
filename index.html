@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tulsi Win</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- टॉप बैनर -->
+    <div class="header">
+        <h2>🌱 Tulsi Win</h2>
+        <div class="wallet">Balance: ₹<span id="userBalance">500</span></div>
+    </div>
+    <!-- गेम लॉबी श्रेणियां -->
+    <div class="lobby-container">
+        <h3>Game Lobby</h3>
+        <div class="game-card" onclick="openGame('Slots')">🎰 Slots</div>
+        <div class="game-card" onclick="openGame('Lottery')">🟢 Lottery / Win Go</div>
+        <div class="game-card" onclick="openGame('Sports')">⚽ Sports</div>
+        <div class="game-card" onclick="openGame('Casino')">🎲 Casino</div>
+        <div class="game-card" onclick="openGame('Rummy')">🃏 Rummy</div>
+    </div>
+    <!-- बॉटम नेविगेशन बार -->
+    <div class="bottom-nav">
+        <button class="nav-btn active">Home</button>
+        <button class="nav-btn">Activity</button>
+        <button class="nav-btn">Promotion</button>
+        <button class="nav-btn">Account</button>
+    </div>
+    <script>
+        function openGame(gameName) {
+            alert(gameName + " game is opening in Tulsi Win...");
+        }
+    </script>
+</body>
+</html>
