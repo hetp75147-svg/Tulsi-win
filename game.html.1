@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tulsi Win - Login</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- लॉगिन / रजिस्टर स्क्रीन -->
+    <div id="auth-container" class="auth-box">
+        <h2>🌱 Tulsi Win</h2>
+        <p>Enter your phone number to start</p>
+        <input type="text" id="phone" placeholder="Mobile Number" maxlength="10">
+        <input type="password" id="password" placeholder="Password">
+        <button onclick="handleAuth()">Login / Register</button>
+    </div>
+
+    <!-- मुख्य गेम ऐप (लॉगिन के बाद दिखेगा) -->
+    <div id="app-container" style="display: none;">
+        <div class="header">
+            <h2>🌱 Tulsi Win</h2>
+            <div class="wallet">Balance: ₹<span id="userBalance">0</span></div>
+        </div>
+
+        <div class="game-container">
+            <h3>Win Go 30Sec</h3>
+            <div class="timer-box">
+                <span>Time Remaining:</span>
+                <h1 id="timer">30</h1>
+            </div>
+
+            <div class="color-buttons">
+                <button class="btn-green" onclick="placeBet('Green')">Green</button>
+                <button class="btn-violet" onclick="placeBet('Violet')">Violet</button>
+                <button class="btn-red" onclick="placeBet('Red')">Red</button>
+            </div>
+        </div>
+
+        <div class="bottom-nav">
+            <button class="nav-btn active">Home</button>
+            <button class="nav-btn">Activity</button>
+            <button class="nav-btn">Promotion</button>
+            <button class="nav-btn">Account</button>
+        </div>
+    </div>
+
+    <script>
+        let currentUserPhone = '';
+        let userBalance = 0;
+
+        // सर्वर से लॉगिन या रजिस्टर करने का फंक्शन
+        async function handleAuth() {
+            const phone = document.getElementById('phone').value;
+            const password = document.getElementById('password').value;
+
+            if (!phone || !password) {
+                alert("Please enter phone and password");
+                return;
+            }
+
+            try {
+                let response = await fetch('http://localhost:3000/api/auth', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone, password })
+                });
+
+                let data = await response.json();
+                if (data.success) {
+                    currentUserPhone = phone;
+                    userBalance = data.user.balance;
+                    
+                    // स्क्रीन बदलें
+                    document.getElementById('auth-container').style.display = 'none';
+                    document.getElementById('app-container').style.display = 'block';
+                    document.getElementById('userBalance').innerText = userBalance;
+                    
+                    alert(data.message);
+                } else {
+                    alert(data.message);
+                }
+            } catch (error) {
+                alert("Server error! Make sure backend is running.");
+            }
+        }
+
+        // बेट लगाने का फंक्शन
+        function placeBet(color) {
+            let amount = prompt("Enter bet amount (₹):", "10");
+            amount = parseInt(amount);
+
+            if (isNaN(amount) || amount <= 0) return;
+
+            if (userBalance < amount) {
+                alert("Insufficient balance!");
+                return;
+            }
+
+            userBalance -= amount;
+            document.getElementById('userBalance').innerText = userBalance;
+            alert(`You placed ₹${amount} on ${color}. Result will update soon!`);
+        }
+
+        // टाइमर सिमुलेशन
+        let timeLeft = 30;
+        setInterval(() => {
+            timeLeft--;
+            if (timeLeft < 0) timeLeft = 30;
+            document.getElementById('timer').innerText = timeLeft;
+        }, 1000);
+    </script>
+</body>
+</html>
