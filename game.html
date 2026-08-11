@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tulsi Win - Win Go Game</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- टॉप बैनर -->
+    <div class="header">
+        <h2>🌱 Tulsi Win</h2>
+        <div class="wallet">Balance: ₹<span id="userBalance">500</span></div>
+    </div>
+
+    <!-- Win Go गेम सेक्सन -->
+    <div class="game-container">
+        <h3>Win Go 30Sec</h3>
+        <div class="timer-box">
+            <span>Time Remaining:</span>
+            <h1 id="timer">30</h1>
+        </div>
+
+        <div class="color-buttons">
+            <button class="btn-green" onclick="placeBet('Green')">Green</button>
+            <button class="btn-violet" onclick="placeBet('Violet')">Violet</button>
+            <button class="btn-red" onclick="placeBet('Red')">Red</button>
+        </div>
+    </div>
+
+    <!-- बॉटम नेविगेशन बार -->
+    <div class="bottom-nav">
+        <button class="nav-btn active">Home</button>
+        <button class="nav-btn">Activity</button>
+        <button class="nav-btn">Promotion</button>
+        <button class="nav-btn">Account</button>
+    </div>
+
+    <script>
+        let balance = 500;
+
+        function placeBet(color) {
+            let amount = prompt("Enter bet amount (₹):", "10");
+            amount = parseInt(amount);
+            
+            if (isNaN(amount) || amount <= 0) {
+                alert("Invalid amount");
+                return;
+            }
+
+            if (balance < amount) {
+                alert("Insufficient balance!");
+                return;
+            }
+
+            balance -= amount;
+            document.getElementById('userBalance').innerText = balance;
+            alert(`You placed ₹${amount} on ${color}. Wait for the timer to finish!`);
+        }
+
+        // नकली लाइव टाइमर सिमुलेशन
+        let timeLeft = 30;
+        setInterval(() => {
+            timeLeft--;
+            if (timeLeft < 0) timeLeft = 30;
+            document.getElementById('timer').innerText = timeLeft;
+        }, 1000);
+    </script>
+</body>
+</html>
